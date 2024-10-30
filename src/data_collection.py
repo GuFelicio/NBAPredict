@@ -6,27 +6,23 @@ import mysql.connector
 import time
 from datetime import datetime
 import re
-from tqdm import tqdm  # Importando o tqdm para a barra de progresso
+from tqdm import tqdm 
 
-# Função para definir intervalos de tempo
 def get_season_range(years_back):
     current_year = datetime.now().year
     start_year = current_year - years_back
     return [f"{year}-{str(year + 1)[-2:]}" for year in range(start_year, current_year)]
 
-# Função para capturar dados da temporada
 def fetch_season_data(season):
     game_log = LeagueGameLog(season=season)
     data = game_log.get_data_frames()[0]
 
-    # Capturar o tipo de jogo (Regular Season ou Playoffs)
     data['GAME_TYPE'] = 'Regular Season'  # Defina um valor padrão
 
     return data[['SEASON_ID', 'TEAM_ID', 'TEAM_ABBREVIATION', 'TEAM_NAME', 'GAME_ID', 'GAME_DATE', 'MATCHUP', 'WL', 'MIN',
                  'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 
                  'STL', 'BLK', 'TOV', 'PF', 'PTS', 'PLUS_MINUS', 'GAME_TYPE']]  # Inclua GAME_TYPE aqui
 
-# Função para capturar dados dos jogadores para um jogo específico
 def fetch_player_data(game_id):
     try:
         box_score = BoxScoreTraditionalV2(game_id=game_id)
@@ -37,7 +33,6 @@ def fetch_player_data(game_id):
         print(f"Erro ao obter dados para o game_id {game_id}: {e}")
         return pd.DataFrame()
 
-# Função para limpar e converter a coluna MIN em minutos numéricos
 def clean_minutes_column(player_data):
     if 'MIN' in player_data.columns:
         player_data['MIN'] = player_data['MIN'].apply(lambda x: float(re.split("[:]", str(x))[0]) if pd.notnull(x) else 0.0)
@@ -45,7 +40,6 @@ def clean_minutes_column(player_data):
         player_data['MIN'] = 0.0  # Se não houver a coluna MIN, define como 0
     return player_data
 
-# Função para inserir dados da temporada no banco de dados
 def insert_season_data_to_db(connection, season_data):
     cursor = connection.cursor()
     
@@ -66,7 +60,6 @@ def insert_season_data_to_db(connection, season_data):
 
     connection.commit()
 
-# Função para inserir dados dos jogadores no banco de dados
 def insert_player_data_to_db(connection, player_data):
     cursor = connection.cursor()
     columns_to_drop = ['TEAM_ABBREVIATION', 'TEAM_CITY', 'NICKNAME', 'COMMENT']
@@ -83,7 +76,6 @@ def insert_player_data_to_db(connection, player_data):
 
     connection.commit()
 
-# Função principal para capturar e salvar dados
 def main():
     connection = mysql.connector.connect(
         host='localhost',

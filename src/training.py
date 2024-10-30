@@ -6,42 +6,38 @@ from sklearn.metrics import accuracy_score, f1_score, classification_report
 import joblib
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
 
-# Carregar dados pré-processados sem outliers
-def load_data(filepath="nba_final_merged_data.csv"):
+#Carregar dados pré-processados sem outliers
+def load_data(filepath="./data/nba_detailed_merged_data.csv"):
     return pd.read_csv(filepath)
 
-# Função para dividir dados em treino e teste
+#Função para dividir dados em treino e teste
 def split_data(data):
-    # Separar recursos e variável alvo
-    X = data.drop(columns=["WL"])  # Recursos
-    y = data["WL"]  # Variável alvo
+    data["WL"] = data["WL"].apply(lambda x: 1 if x == 'W' else 0)
 
-    # Identificar colunas categóricas
+    X = data.drop(columns=["WL"]) 
+    y = data["WL"]
+
     categorical_cols = X.select_dtypes(include=['object']).columns.tolist()
 
-    # Criar um transformador para codificar colunas categóricas
     column_transformer = ColumnTransformer(
         transformers=[
-            ('cat', OneHotEncoder(), categorical_cols)  # Aplica OneHotEncoder nas colunas categóricas
+            ('cat', Pipeline(steps=[
+                ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),  # Preenche NaNs em categóricas
+                ('onehot', OneHotEncoder(handle_unknown='ignore'))
+            ]), categorical_cols)
         ],
-        remainder='passthrough'  # Mantém as outras colunas
+        remainder='passthrough'
     )
 
-    # Aplicar a transformação
     X_transformed = column_transformer.fit_transform(X)
 
-    # Converter matriz esparsa para um DataFrame denso
-    X_transformed = pd.DataFrame(X_transformed.toarray())  # Converte csr_matrix para array
-
-    # Tratar valores ausentes
-    if X_transformed.isnull().any().any():  # Verificar se há NaN
-        X_transformed = X_transformed.fillna(0)  # Preencher NaNs com 0
-
-    # Dividir os dados em conjuntos de treino e teste
+    #Converter matriz esparsa para um DataFrame denso e tratar valores ausentes
+    X_transformed = pd.DataFrame(X_transformed.toarray()).fillna(0)  
     return train_test_split(X_transformed, y, test_size=0.2, random_state=42)
 
-# Função para treinar e avaliar modelos
 def train_and_evaluate_models(X_train, X_test, y_train, y_test):
     models = {
         "RandomForest": RandomForestClassifier(random_state=42),
@@ -61,7 +57,6 @@ def train_and_evaluate_models(X_train, X_test, y_train, y_test):
         print(f"\n{model_name} - Acurácia: {accuracy:.4f}, F1 Score: {f1:.4f}")
         print(classification_report(y_test, y_pred))
 
-        # Comparar acurácias e salvar o melhor modelo
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_model = model
@@ -70,15 +65,13 @@ def train_and_evaluate_models(X_train, X_test, y_train, y_test):
     print(f"\nMelhor modelo: {best_model_name} com Acurácia de {best_accuracy:.4f}")
     return best_model
 
-# Função principal para carregar, treinar e salvar o melhor modelo
 def main():
     data = load_data()
     X_train, X_test, y_train, y_test = split_data(data)
 
     best_model = train_and_evaluate_models(X_train, X_test, y_train, y_test)
 
-    # Salvar o melhor modelo
-    joblib.dump(best_model, "nba_best_model.pkl")
+    joblib.dump(best_model, "./models/nba_best_model.pkl")
     print("Melhor modelo salvo como nba_best_model.pkl")
 
 if __name__ == "__main__":

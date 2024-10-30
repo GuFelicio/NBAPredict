@@ -40,32 +40,25 @@ def aggregate_player_data(player_data):
         "PLUS_MINUS": "mean"
     }).reset_index()
     
-    # Renomear colunas agregadas
     aggregated_data.columns = ['GAME_ID', 'AVG_PTS', 'AVG_REB', 'AVG_AST', 'AVG_MIN', 'AVG_PLUS_MINUS']
     return aggregated_data
 
 def preprocess_data():
     season_data, player_data = fetch_data_from_db()
     
-    # Limpeza dos dados da temporada
     season_data = handle_missing_values(season_data)
 
-    # Normalização dos dados da temporada
     columns_to_normalize_season = ["FG_PCT", "FG3_PCT", "FT_PCT", "REB", "AST", "PTS"]
     season_data = normalize_data(season_data, columns_to_normalize_season)
 
-    # Salvar os dados da temporada em um arquivo
     season_data.to_csv("nba_season_data.csv", index=False)
     print("Dados da temporada pré-processados salvos em nba_season_data.csv")
 
-    # Agregar e processar dados dos jogadores
     aggregated_player_data = aggregate_player_data(player_data)
 
-    # Manter todos os dados dos jogadores e salvar
     player_data_cleaned = handle_missing_values(player_data)  # Limpeza adicional se necessário
 
-    # Salvar os dados agregados dos jogadores em um arquivo
-    player_data_cleaned.to_csv("nba_player_data.csv", index=False)
+    player_data_cleaned.to_csv("./data/nba_player_data.csv", index=False)
     print("Dados dos jogadores pré-processados salvos em nba_player_data.csv")
 
 if __name__ == "__main__":
