@@ -1,7 +1,0 @@
-%data%
-*.csv
-*.dll
-*.pkl
-%venv%
-*.json
-*.JSON

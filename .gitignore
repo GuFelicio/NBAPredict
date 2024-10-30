@@ -1,0 +1,10 @@
+models/nba_best_model.pkl
+models/nba_ensemble_model.pkl
+bfg.jar
+%data%
+*.csv
+*.dll
+*.pkl
+%venv%
+*.json
+*.JSON
