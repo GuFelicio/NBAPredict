@@ -47,10 +47,4 @@ Seja bem-vindo ao **NBA Game Prediction Project**! Este projeto usa aprendizado 
 
 - **src/**: Contém os scripts principais para treinamento, validação cruzada, agregação de dados e predições ao vivo.
 - **data/**: Armazena os dados tratados e prontos para o modelo.
-- **README.md**: Este documento explicativo do projeto. 😃
-
-## 📝 Notas Finais
-
-Este projeto foi uma grande jornada para construir um sistema de predições em tempo real com machine learning! Qualquer sugestão é bem-vinda. 😊 
-
-Boa sorte nas previsões e que você aproveite a jornada tanto quanto nós! 🏅
+- **README.md**: Este documento explicativo do projeto. 
